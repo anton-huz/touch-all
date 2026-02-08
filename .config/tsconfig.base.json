@@ -1,0 +1,11 @@
+{
+  "extends": ["@total-typescript/tsconfig/tsc/dom/library"],
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "composite": true,
+    "baseUrl": "../src",
+    "outDir": "../dist",
+    "rootDir": "../src"
+  }
+}
