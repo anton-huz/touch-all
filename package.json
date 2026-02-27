@@ -1,6 +1,6 @@
 {
   "name": "touch-all",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "CLI tool to create folder structures from markdown tree representations",
   "keywords": [
     "cli",
