@@ -12,7 +12,7 @@
   "license": "GPL-3.0-or-later",
   "author": "Anton Huz <anton@ahuz.dev>",
   "bin": {
-    "touch-all": "./dist/slim/touch-all.js"
+    "touch-all": "dist/slim/touch-all.js"
   },
   "files": [
     "dist/bundled",
@@ -26,6 +26,10 @@
       "types": "./dist/lib/index.d.ts",
       "import": "./dist/lib/index.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "tsup --config .config/tsup.config.ts",

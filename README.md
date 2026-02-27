@@ -102,14 +102,14 @@ my-project/
 
 ### Rules
 
-| Syntax | Meaning |
-|--------|---------|
-| `name/` | directory |
-| `name` | file |
-| `dir/sub/` | directory at an explicit subpath |
-| `dir/sub/file.ts` | file at an explicit subpath |
-| `# comment` | ignored (stripped) |
-| `// comment` | ignored (stripped) |
+| Syntax            | Meaning                          |
+| ----------------- | -------------------------------- |
+| `name/`           | directory                        |
+| `name`            | file                             |
+| `dir/sub/`        | directory at an explicit subpath |
+| `dir/sub/file.ts` | file at an explicit subpath      |
+| `# comment`       | ignored (stripped)               |
+| `// comment`      | ignored (stripped)               |
 
 Items at the root level (no indentation / no parent) are created directly inside the target directory.
 
@@ -153,10 +153,7 @@ import { NodeContext, NodeRuntime } from '@effect/platform-node'
 
 const items = parserFolderStructure(tree)
 
-fileStructureCreator(items, '/absolute/target/path').pipe(
-  Effect.provide(NodeContext.layer),
-  NodeRuntime.runMain,
-)
+fileStructureCreator(items, '/absolute/target/path').pipe(Effect.provide(NodeContext.layer), NodeRuntime.runMain)
 ```
 
 ### `resolveProjectPathToBase(projectPath: string, basePath: string): Effect<string, PathTraversalError>`
@@ -165,10 +162,10 @@ Resolves `projectPath` relative to `basePath` and rejects any path that would es
 
 ### Error types
 
-| Class | `_tag` | When thrown |
-|-------|--------|-------------|
+| Class                | `_tag`                 | When thrown                                                     |
+| -------------------- | ---------------------- | --------------------------------------------------------------- |
 | `PathTraversalError` | `'PathTraversalError'` | Resolved path escapes `basePath`, or `basePath` is not absolute |
-| `FsError` | `'FsError'` | `mkdirSync` or `writeFileSync` fails |
+| `FsError`            | `'FsError'`            | `mkdirSync` or `writeFileSync` fails                            |
 
 ## License
 
