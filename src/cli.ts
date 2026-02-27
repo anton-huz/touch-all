@@ -2,13 +2,15 @@
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
 import { Args, Command, Options } from '@effect/cli'
-import { Console, Effect, Logger, LogLevel } from 'effect'
+import { Console, Effect, Logger, LogLevel, Option } from 'effect'
+import { createInterface } from 'node:readline'
 import { parserFolderStructure } from './parser'
 import { fileStructureCreator } from './fsGenerator'
 
 // Define CLI arguments
 const treeArg = Args.text({ name: 'tree' }).pipe(
-  Args.withDescription('Multiline string representing the directory tree structure')
+  Args.withDescription('Multiline string representing the directory tree structure'),
+  Args.optional
 )
 
 const pathOption = Options.directory('path').pipe(
@@ -38,18 +40,31 @@ const command = Command.make('touch-all', {
 }).pipe(
   Command.withDescription('Create directory structure from a tree representation'),
   Command.withHandler(({ tree, path: targetPath, dryRun = false, verbose }) => {
+    const readStdin = Effect.tryPromise({
+      try: () =>
+        new Promise<string>((resolve) => {
+          const rl = createInterface({ input: process.stdin })
+          const lines: string[] = []
+          rl.on('line', (line) => lines.push(line))
+          rl.on('close', () => resolve(lines.join('\n')))
+        }),
+      catch: (e) => new Error(`Failed to read stdin: ${String(e)}`),
+    })
+
     const program = Effect.gen(function* (_) {
+      const treeString = Option.isSome(tree) ? tree.value : yield* _(readStdin)
+
       if (dryRun) {
         yield* _(Effect.logInfo('Running in dry mode. No one file system node will be created.'))
       }
       yield* _(Effect.logInfo('Parsing tree structure...'))
 
-      const items = parserFolderStructure(tree)
+      const items = parserFolderStructure(treeString)
 
       if (items.length === 0) {
         yield* _(Console.error('No valid items found in the tree structure'))
         yield* _(Console.error(items))
-        yield* _(Console.error(tree))
+        yield* _(Console.error(treeString))
         return yield* _(Effect.fail(new Error('Invalid tree structure')))
       }
 
