@@ -55,5 +55,6 @@
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "url": "https://github.com/anton-huz/touch-all"
 }
