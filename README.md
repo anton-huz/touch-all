@@ -1,30 +1,41 @@
-# Tree Builder CLI
+# touch-all
 
-A TypeScript CLI tool built on `@effect/cli` that creates directory structures from tree-like string representations.
+CLI tool to create folder structures from markdown tree representations.
+
+Pass a tree string — drawn with box-drawing characters or plain indentation — and `touch-all` creates every directory and file on disk.
+
+## Features
+
+- Accepts tree strings in **box-drawing** (`├──`, `└──`, `│`) or **indentation** (spaces) format
+- Trailing `/` marks a directory; no trailing `/` marks a file
+- Inline comments stripped automatically (`# ...` and `// ...`)
+- `--dry-run` parses and validates without touching the file system
+- `--verbose` prints every created path
+- Path traversal protection — no item can escape the target directory
+- Importable as a Node.js library with full TypeScript types
 
 ## Installation
 
 ```bash
-npm install
-npm run build
+npm install -g touch-all
+```
+
+Or run without installing:
+
+```bash
+npx touch-all "..."
 ```
 
 ## Usage
 
-### Basic usage (current directory)
+### Basic (current directory)
 
 ```bash
-tsx tree-builder.ts "
-boot/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       ├── publish.yml
-│       └── security.yml
+touch-all "
+my-project/
 ├── src/
 │   ├── index.ts
-│   └── templates/
-│       └── index.ts
+│   └── index.test.ts
 ├── package.json
 └── README.md
 "
@@ -33,102 +44,132 @@ boot/
 ### Specify target directory
 
 ```bash
-tsx tree-builder.ts "
-boot/
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       ├── publish.yml
-│       └── security.yml
-├── src/
-│   ├── index.ts
-│   └── templates/
-│       └── index.ts
-├── package.json
-└── README.md
-" --path ./my-project
+touch-all "..." --path ./my-project
+touch-all "..." -p ./my-project
 ```
 
-Or using the short form:
+### Dry run — parse and validate, no files created
 
 ```bash
-tsx tree-builder.ts "..." -p ./my-project
+touch-all "..." --dry-run
+touch-all "..." -n
 ```
 
-### Skip root directory
-
-If your tree has a single top-level directory that you want to skip:
+### Verbose output
 
 ```bash
-tsx tree-builder.ts "
-boot/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── src/
-│   └── index.ts
-└── package.json
-" --skip-root
+touch-all "..." --verbose
+touch-all "..." -v
 ```
 
-This will create `.github/`, `src/`, and `package.json` directly in the target directory, without creating a `boot/` folder.
-
-You can combine options:
+### Help
 
 ```bash
-tsx tree-builder.ts "..." --path ./my-project --skip-root
+touch-all --help
 ```
-
-### After building
-
-```bash
-node dist/tree-builder.js "..." --path ./output
-```
-
-## Features
-
-- ✅ Parses ASCII tree structures with various tree characters (├──, └──, │)
-- ✅ Creates directories and empty files
-- ✅ Supports nested structures
-- ✅ Optional target directory (defaults to current directory)
-- ✅ Skip root directory option (--skip-root) for single top-level directories
-- ✅ Built on Effect ecosystem for type-safe functional programming
 
 ## Tree Format
 
-The tool recognizes:
+Both formats produce identical results.
 
-- Directories: end with `/` (e.g., `src/`)
-- Files: no trailing `/` (e.g., `index.ts`)
-- Tree characters: `├──`, `└──`, `│` (automatically stripped)
-- Comments in parentheses: `(empty - ...)` (ignored)
-
-## Example
-
-Input:
+### Box-drawing characters
 
 ```
-my-app/
+my-project/
+├── .config/
+│   ├── tsconfig.json
+│   └── vite.config.ts
 ├── src/
-│   ├── components/
-│   │   └── Button.tsx
-│   └── index.ts
-└── package.json
+│   ├── index.ts
+│   └── index.test.ts
+├── package.json
+└── README.md
 ```
 
-Creates:
+### Indentation (spaces)
 
 ```
-my-app/
+my-project/
+  .config/
+    tsconfig.json
+    vite.config.ts
   src/
-    components/
-      Button.tsx (empty file)
-    index.ts (empty file)
-  package.json (empty file)
+    index.ts
+    index.test.ts
+  package.json
+  README.md
 ```
 
-## Help
+### Rules
+
+| Syntax | Meaning |
+|--------|---------|
+| `name/` | directory |
+| `name` | file |
+| `dir/sub/` | directory at an explicit subpath |
+| `dir/sub/file.ts` | file at an explicit subpath |
+| `# comment` | ignored (stripped) |
+| `// comment` | ignored (stripped) |
+
+Items at the root level (no indentation / no parent) are created directly inside the target directory.
+
+## Library API
 
 ```bash
-tsx tree-builder.ts --help
+npm install touch-all
 ```
+
+```ts
+import {
+  parserFolderStructure,
+  fileStructureCreator,
+  resolveProjectPathToBase,
+  PathTraversalError,
+  FsError,
+  cli,
+} from 'touch-all'
+import type { ParserResult, ParserResultLineItem } from 'touch-all'
+```
+
+### `parserFolderStructure(tree: string): ParserResult`
+
+Parses a tree string into a flat list of `{ path, isFile }` items. Pure function, no I/O.
+
+```ts
+const items = parserFolderStructure(`
+  src/
+    index.ts
+`)
+// [{ path: 'src', isFile: false }, { path: 'src/index.ts', isFile: true }]
+```
+
+### `fileStructureCreator(items: ParserResult, basePath: string): Effect<void, FsError | PathTraversalError>`
+
+Creates the parsed structure on disk under `basePath`. Returns an [Effect](https://effect.website/).
+
+```ts
+import { Effect } from 'effect'
+import { NodeContext, NodeRuntime } from '@effect/platform-node'
+
+const items = parserFolderStructure(tree)
+
+fileStructureCreator(items, '/absolute/target/path').pipe(
+  Effect.provide(NodeContext.layer),
+  NodeRuntime.runMain,
+)
+```
+
+### `resolveProjectPathToBase(projectPath: string, basePath: string): Effect<string, PathTraversalError>`
+
+Resolves `projectPath` relative to `basePath` and rejects any path that would escape `basePath` (path traversal protection).
+
+### Error types
+
+| Class | `_tag` | When thrown |
+|-------|--------|-------------|
+| `PathTraversalError` | `'PathTraversalError'` | Resolved path escapes `basePath`, or `basePath` is not absolute |
+| `FsError` | `'FsError'` | `mkdirSync` or `writeFileSync` fails |
+
+## License
+
+[GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)

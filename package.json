@@ -1,5 +1,5 @@
 {
-  "name": "create-fs",
+  "name": "touch-all",
   "version": "0.0.1",
   "description": "CLI tool to create folder structures from markdown tree representations",
   "keywords": [
@@ -9,19 +9,30 @@
     "markdown",
     "structure"
   ],
-  "license": "MIT",
-  "author": "",
+  "license": "GPL-3.0-or-later",
+  "author": "Anton Huz <anton@ahuz.dev>",
   "bin": {
-    "create-fs": "./dist/create-fs.js"
+    "touch-all": "./dist/slim/touch-all.js"
   },
+  "files": [
+    "dist/bundled",
+    "dist/lib"
+  ],
   "type": "module",
-  "main": "dist/create-fs.js",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.d.ts",
+      "import": "./dist/lib/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc",
-    "dev": "node --loader ts-node/esm create-fs.ts",
-    "check:lint": "oxlint . -c .config/oxlintrc.json",
-    "check:format": "oxfmt . -c .config/oxfmtrc.json --check",
-    "format": "oxfmt . -c .config/oxfmtrc.json --write"
+    "build": "tsup --config .config/tsup.config.ts",
+    "check:lint": "oxlint . -c .config/.oxlintrc.json",
+    "check:format": "oxfmt . -c .config/.oxfmtrc.json --check",
+    "format": "oxfmt . -c .config/.oxfmtrc.json --write",
+    "test": "vitest --config .config/vitest.config.ts run"
   },
   "dependencies": {
     "@effect/cli": "^0.73.2",
@@ -29,9 +40,14 @@
     "effect": "^3.19.16"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "oxfmt": "^0.28.0",
-    "oxlint": "^1.43.0",
-    "typescript": "^5.7.2"
+    "@total-typescript/tsconfig": "1.0.4",
+    "@types/node": "22.10.2",
+    "oxfmt": "0.28.0",
+    "oxlint": "1.43.0",
+    "tsup": "8.5.1",
+    "vitest": "4.0.18"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
