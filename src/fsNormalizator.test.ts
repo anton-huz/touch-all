@@ -37,11 +37,11 @@ describe('safeNormalizePath', () => {
 
   describe('path traversal attempts', () => {
     test('single traversal outside base throws', () => {
-      expect(() => res('../outside', '/base')).toThrow('Went outside base throws')
+      expect(() => res('../outside', '/base')).toThrow('project: ../outside')
     })
 
     test('deep traversal throws', () => {
-      expect(() => res('../../etc/passwd', '/opt/app')).toThrow('Went outside base throws')
+      expect(() => res('../../etc/passwd', '/opt/app')).toThrow('project: ../../etc/passwd')
     })
 
     test('traversal failure is PathTraversalError', () => {
@@ -59,7 +59,7 @@ describe('safeNormalizePath', () => {
     })
 
     test('relative projectPath should still respect "project boundary"', () => {
-      expect(() => res('../file.txt', 'relative/path/')).toThrow('Went outside project boundary')
+      expect(() => res('../file.txt', 'relative/path/')).toThrow('project: ../file.txt')
     })
   })
 })
