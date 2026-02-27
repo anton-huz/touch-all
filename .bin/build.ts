@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { $ } from 'bun'
-import packageJson from './package.json'
+import packageJson from '../package.json'
 
 const SHEBANG = '#!/usr/bin/env node\n'
 const deps = Object.keys(packageJson.dependencies ?? {})

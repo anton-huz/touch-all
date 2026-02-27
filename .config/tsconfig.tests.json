@@ -1,12 +1,8 @@
 {
   "extends": ["./tsconfig.base.json"],
   "compilerOptions": {
-    "composite": true,
-    "baseUrl": "../src",
-    "outDir": "../dist",
-    "rootDir": "../src",
-    "rewriteRelativeImportExtensions": true,
+    "noEmit": true,
     "types": ["vitest/globals", "node"]
   },
-  "include": ["../src/**/*.ts", "../src/**/*.test.ts"]
+  "include": ["../src/**/*.ts"]
 }

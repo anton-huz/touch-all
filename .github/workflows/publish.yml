@@ -25,5 +25,5 @@ jobs:
 
       - run: bun install
       - run: bun test
-      - run: bun run build
+      - run: bun run .bin/build.ts
       - run: npm publish --provenance --access public
