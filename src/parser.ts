@@ -18,11 +18,10 @@ export const parserFolderStructure = (treeString: string): ParserResult => {
     // Remove tree characters (│, ├──, └──, etc.)
     const p03 = p02.replace(/[│├└─\t]/g, ' ')
 
-    const cleanLine = p03.trim()
+    const cleanLine = p03.trim().replace(/^\.\//, '')
 
     if (!cleanLine) continue
     if (cleanLine === '/') continue
-    if (cleanLine.startsWith('./')) continue
     if (cleanLine.endsWith('../')) continue
 
     const indent = countLeadingSpaces(p03)

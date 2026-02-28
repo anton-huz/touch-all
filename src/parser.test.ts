@@ -14,6 +14,9 @@ test('Basic constrains for parserFolderStructure', () => {
   expect(parser('demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
   expect(parser('/demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
   expect(parser('  /demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
+  expect(parser('./demo')).toEqual([{ path: 'demo', isFile: true }])
+  expect(parser('./demo/')).toEqual([{ path: 'demo', isFile: false }])
+  expect(parser('./demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
 })
 
 test('Complex constrains with drawing symbols', () => {
