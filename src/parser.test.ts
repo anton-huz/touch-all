@@ -379,11 +379,13 @@ my-project/
 test('Simple folders', () => {
   const parser = parserFolderStructure
 
-  expect(parser(`
+  expect(
+    parser(`
 aa/
 bb/
 cc/
-  `)).toEqual([
+  `)
+  ).toEqual([
     {
       'isFile': false,
       'path': 'aa',
@@ -402,11 +404,13 @@ cc/
 test('Simple files', () => {
   const parser = parserFolderStructure
 
-  expect(parser(`
+  expect(
+    parser(`
 aa
 bb
 cc
-  `)).toEqual([
+  `)
+  ).toEqual([
     {
       'isFile': true,
       'path': 'aa',
