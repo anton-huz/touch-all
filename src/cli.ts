@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
+import { createInterface } from 'node:readline'
 import { Args, Command, Options } from '@effect/cli'
 import { Console, Effect, Logger, LogLevel, Option } from 'effect'
-import { createInterface } from 'node:readline'
 import { parserFolderStructure } from './parser'
 import { fileStructureCreator } from './fsGenerator'
+import pkgjsn from '../package.json'
 
-// Define CLI arguments
+// Definition of CLI arguments and options
 const treeArg = Args.text({ name: 'tree' }).pipe(
   Args.withDescription('Multiline string representing the directory tree structure'),
   Args.optional
@@ -31,7 +32,7 @@ const verboseOption = Options.boolean('verbose').pipe(
   Options.withDescription('Log to console extra information about creating a directory tree')
 )
 
-// Define the command
+// Declaration of the main command
 const command = Command.make('touch-all', {
   tree: treeArg,
   path: pathOption,
@@ -82,6 +83,6 @@ const command = Command.make('touch-all', {
 
 // Run the CLI
 export const cli = Command.run(command, {
-  name: 'Touch All',
-  version: '0.0.1',
+  name: pkgjsn.name,
+  version: pkgjsn.version,
 })
