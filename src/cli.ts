@@ -41,15 +41,22 @@ const command = Command.make('touch-all', {
 }).pipe(
   Command.withDescription('Create directory structure from a tree representation'),
   Command.withHandler(({ tree, path: targetPath, dryRun = false, verbose }) => {
-    const readStdin = Effect.tryPromise({
-      try: () =>
-        new Promise<string>((resolve) => {
-          const rl = createInterface({ input: process.stdin })
-          const lines: string[] = []
-          rl.on('line', (line) => lines.push(line))
-          rl.on('close', () => resolve(lines.join('\n')))
-        }),
-      catch: (e) => new Error(`Failed to read stdin: ${String(e)}`),
+    const readStdin = Effect.gen(function* (_) {
+      if (process.stdin.isTTY) {
+        yield* _(Console.log('Paste your tree structure and press Ctrl+D when done:'))
+      }
+      return yield* _(
+        Effect.tryPromise({
+          try: () =>
+            new Promise<string>((resolve) => {
+              const rl = createInterface({ input: process.stdin })
+              const lines: string[] = []
+              rl.on('line', (line) => lines.push(line))
+              rl.on('close', () => resolve(lines.join('\n')))
+            }),
+          catch: (e) => new Error(`Failed to read stdin: ${String(e)}`),
+        })
+      )
     })
 
     const program = Effect.gen(function* (_) {
