@@ -11,6 +11,10 @@
   ],
   "license": "GPL-3.0-or-later",
   "author": "Anton Huz <anton@ahuz.dev>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anton-huz/touch-all"
+  },
   "bin": {
     "touch-all": "dist/slim/touch-all.js"
   },
@@ -23,8 +27,8 @@
   "types": "dist/lib/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/lib/index.js",
-      "types": "./dist/lib/index.d.ts"
+      "types": "./dist/lib/index.d.ts",
+      "import": "./dist/lib/index.js"
     }
   },
   "publishConfig": {
