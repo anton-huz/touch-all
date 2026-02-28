@@ -23,7 +23,7 @@ const pathOption = Options.directory('path').pipe(
 const dryRunOption = Options.boolean('dry-run').pipe(
   Options.withAlias('n'),
   Options.withDefault(false),
-  Options.withDescription('Skip the top-level directory if there is only one')
+  Options.withDescription('Parse and validate the tree without writing to the file system')
 )
 
 const verboseOption = Options.boolean('verbose').pipe(
@@ -64,8 +64,6 @@ const command = Command.make('touch-all', {
 
       if (items.length === 0) {
         yield* _(Console.error('No valid items found in the tree structure'))
-        yield* _(Console.error(items))
-        yield* _(Console.error(treeString))
         return yield* _(Effect.fail(new Error('Invalid tree structure')))
       }
 
