@@ -276,3 +276,148 @@ README.md
     },
   ])
 })
+
+test('Edge cases with empty lines and spaces', () => {
+  const parser = parserFolderStructure
+  const structure = `
+my-project/
+
+  .config/
+
+    tsconfig.json
+
+    tsconfig.test.json
+
+    vite.config.ts
+
+    oxlint.json
+
+  src/
+
+    sample/
+
+      index.ts
+
+      index.test.ts
+
+    index.ts
+
+    index.test.ts
+
+  package.json
+
+  README.md
+
+  .gitignore
+  `
+
+  expect(parser(structure)).toHaveLength(15)
+  expect(parser(structure)).toEqual([
+    {
+      'isFile': false,
+      'path': 'my-project',
+    },
+    {
+      'isFile': false,
+      'path': 'my-project/.config',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/.config/tsconfig.json',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/.config/tsconfig.test.json',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/.config/vite.config.ts',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/.config/oxlint.json',
+    },
+    {
+      'isFile': false,
+      'path': 'my-project/src',
+    },
+    {
+      'isFile': false,
+      'path': 'my-project/src/sample',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/src/sample/index.ts',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/src/sample/index.test.ts',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/src/index.ts',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/src/index.test.ts',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/package.json',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/README.md',
+    },
+    {
+      'isFile': true,
+      'path': 'my-project/.gitignore',
+    },
+  ])
+})
+
+test('Simple folders', () => {
+  const parser = parserFolderStructure
+
+  expect(parser(`
+aa/
+bb/
+cc/
+  `)).toEqual([
+    {
+      'isFile': false,
+      'path': 'aa',
+    },
+    {
+      'isFile': false,
+      'path': 'bb',
+    },
+    {
+      'isFile': false,
+      'path': 'cc',
+    },
+  ])
+})
+
+test('Simple files', () => {
+  const parser = parserFolderStructure
+
+  expect(parser(`
+aa
+bb
+cc
+  `)).toEqual([
+    {
+      'isFile': true,
+      'path': 'aa',
+    },
+    {
+      'isFile': true,
+      'path': 'bb',
+    },
+    {
+      'isFile': true,
+      'path': 'cc',
+    },
+  ])
+})

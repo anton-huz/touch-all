@@ -16,7 +16,7 @@ export const parserFolderStructure = (treeString: string): ParserResult => {
     const [p02 = '', _comment02] = p01.split('//')
 
     // Remove tree characters (│, ├──, └──, etc.)
-    const p03 = p02.replace(/[│├└─\s]/g, ' ')
+    const p03 = p02.replace(/[│├└─\t]/g, ' ')
 
     const cleanLine = p03.trim()
 
@@ -30,8 +30,8 @@ export const parserFolderStructure = (treeString: string): ParserResult => {
     const level = indentSize === 0 ? 0 : indent / indentSize
 
     // Adjust stack to current level
-    if (previousIndentLevel > level) {
-      pathStack.splice(level, previousIndentLevel - level)
+    if (previousIndentLevel >= level) {
+      pathStack.splice(level, pathStack.length - level)
     }
 
     previousIndentLevel = level
