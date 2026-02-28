@@ -19,7 +19,7 @@
     "touch-all": "dist/slim/touch-all.js"
   },
   "files": [
-    "dist/bundled",
+    "dist/slim",
     "dist/lib"
   ],
   "type": "module",
