@@ -9,13 +9,3 @@ export class PathTraversalError {
   }
 }
 
-/**
- * Error type for file system operation failures
- */
-export class FsError {
-  readonly _tag = 'FsError'
-  constructor(public readonly message: string) {}
-  toString() {
-    return `${this._tag}: ${this.message}`
-  }
-}
