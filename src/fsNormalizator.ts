@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
-import { resolve, relative, sep } from 'node:path'
+import { Path } from '@effect/platform'
 import { Effect } from 'effect'
 import { PathTraversalError } from './_commonErrors'
 
@@ -15,14 +15,17 @@ import { PathTraversalError } from './_commonErrors'
 export const resolveProjectPathToBase = (
   projectPath: string,
   basePath: string
-): Effect.Effect<string, PathTraversalError> => {
-  const filePath = projectPath.startsWith(sep) ? `.${projectPath}` : projectPath
-  const absolute = resolve(basePath, filePath)
-  const rel = relative(basePath, absolute)
+): Effect.Effect<string, PathTraversalError, Path.Path> =>
+  Effect.gen(function* () {
+    const path = yield* Path.Path
 
-  if (rel.startsWith('..')) {
-    return Effect.fail(new PathTraversalError(['project:', projectPath, 'base:', basePath].join(' ')))
-  }
+    const filePath = projectPath.startsWith(path.sep) ? `.${projectPath}` : projectPath
+    const absolute = path.resolve(basePath, filePath)
+    const rel = path.relative(basePath, absolute)
 
-  return Effect.succeed(absolute)
-}
+    if (rel.startsWith('..')) {
+      return yield* Effect.fail(new PathTraversalError(['project:', projectPath, 'base:', basePath].join(' ')))
+    }
+
+    return absolute
+  })

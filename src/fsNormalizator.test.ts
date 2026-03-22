@@ -3,11 +3,13 @@
 
 import { describe, test, expect } from 'vitest'
 import { Effect, Exit, Cause, Option } from 'effect'
+import { NodeContext } from '@effect/platform-node'
 import { resolveProjectPathToBase } from './fsNormalizator'
 import { PathTraversalError } from './_commonErrors'
 
 describe('safeNormalizePath', () => {
-  const res = (a: string, b: string) => Effect.runSync(resolveProjectPathToBase(a, b))
+  const res = (a: string, b: string) =>
+    Effect.runSync(resolveProjectPathToBase(a, b).pipe(Effect.provide(NodeContext.layer)))
 
   describe('valid paths within base directory', () => {
     test('root base with root path resolves to /', () => {
@@ -45,7 +47,9 @@ describe('safeNormalizePath', () => {
     })
 
     test('traversal failure is PathTraversalError', () => {
-      const exit = Effect.runSyncExit(resolveProjectPathToBase('../outside', '/base'))
+      const exit = Effect.runSyncExit(
+        resolveProjectPathToBase('../outside', '/base').pipe(Effect.provide(NodeContext.layer))
+      )
       expect(Exit.isFailure(exit)).toBe(true)
 
       const error = Option.getOrNull(Cause.failureOption((exit as Exit.Failure<any, PathTraversalError>).cause))

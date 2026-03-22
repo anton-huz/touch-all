@@ -2,9 +2,8 @@
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
 import { createInterface } from 'node:readline'
-import nodePath from 'node:path'
 import { Args, Command, Options } from '@effect/cli'
-import { Terminal } from '@effect/platform'
+import { Path, Terminal } from '@effect/platform'
 import { Console, Effect, Logger, LogLevel, Option } from 'effect'
 import { parserFolderStructure } from './parser'
 import { fileStructureCreator } from './fsGenerator'
@@ -68,6 +67,7 @@ const command = Command.make('touch-all', {
 
     const checkOutsideSymlinks = (treeString: string, projectRoot: string) =>
       Effect.gen(function* () {
+        const nodePath = yield* Path.Path
         const items = parserFolderStructure(treeString)
         const resolvedRoot = nodePath.resolve(projectRoot)
 
