@@ -25,6 +25,9 @@ jobs:
       - uses: oven-sh/setup-bun@v2
 
       - run: bun install
+      - run: bun check:format
+      - run: bun check:ts
+      - run: bun check:lint
       - run: bun test
       - run: bun run .bin/build.ts
       - run: npm publish --provenance
