@@ -3,6 +3,7 @@
 
 import { describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { Effect } from 'effect'
+import { Terminal } from '@effect/platform'
 import { NodeContext } from '@effect/platform-node'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -10,7 +11,20 @@ import path from 'node:path'
 import { cli } from './cli'
 
 const run = (args: string[]) =>
-  Effect.runPromise(cli(['node', 'touch-all', ...args]).pipe(Effect.provide(NodeContext.layer)))
+  Effect.runPromise(
+    cli(['node', 'touch-all', ...args]).pipe(
+      Effect.provideService(Terminal.Terminal, {
+        columns: Effect.succeed(80),
+        rows: Effect.succeed(24),
+        isTTY: Effect.succeed(false),
+        display: () => Effect.void,
+        readLine: Effect.fail(new Terminal.QuitException()),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        readInput: Effect.dieMessage('readInput not supported in tests') as any,
+      }),
+      Effect.provide(NodeContext.layer)
+    )
+  )
 
 describe('touch-all CLI', () => {
   describe('--dry-run', () => {

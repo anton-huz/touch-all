@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
-import { createInterface } from 'node:readline'
 import { Args, Command, Options } from '@effect/cli'
 import { Path, Terminal } from '@effect/platform'
 import { Console, Effect, Logger, LogLevel, Option } from 'effect'
@@ -51,19 +50,16 @@ const command = Command.make('touch-all', {
   Command.withDescription('Create directory structure from a tree representation'),
   Command.withHandler(({ tree, path: targetPath, dryRun = false, verbose, yes }) => {
     const readStdin = Effect.gen(function* () {
-      if (process.stdin.isTTY) {
-        yield* Console.log('Paste your tree structure and press Ctrl+D when done:')
+      const terminal = yield* Terminal.Terminal
+      const lines: string[] = []
+      while (true) {
+        const line = yield* terminal.readLine.pipe(
+          Effect.catchTag('QuitException', () => Effect.succeed(null as string | null))
+        )
+        if (line === null) break
+        lines.push(line)
       }
-      return yield* Effect.tryPromise({
-        try: () =>
-          new Promise<string>((resolve) => {
-            const rl = createInterface({ input: process.stdin })
-            const lines: string[] = []
-            rl.on('line', (line) => lines.push(line))
-            rl.on('close', () => resolve(lines.join('\n')))
-          }),
-        catch: (e) => new Error(`Failed to read stdin: ${String(e)}`),
-      })
+      return lines.join('\n')
     })
 
     const checkOutsideSymlinks = (treeString: string, projectRoot: string) =>
@@ -83,13 +79,6 @@ const command = Command.make('touch-all', {
 
         if (yes) return items
 
-        if (!process.stdin.isTTY) {
-          yield* Console.error(
-            `Cannot prompt in non-interactive mode: tree contains symlinks outside PROJECT_ROOT (${resolvedRoot}). Use --yes to proceed.`
-          )
-          return yield* Effect.fail(new Error('Non-interactive mode with outside symlinks'))
-        }
-
         const listing = outsideSymlinks.map((item) => `  ${item.path} -> ${item.target}`).join('\n')
 
         yield* Console.log(`Warning: the following symlinks point outside PROJECT_ROOT (${resolvedRoot}):\n${listing}`)
@@ -97,7 +86,11 @@ const command = Command.make('touch-all', {
         const terminal = yield* Terminal.Terminal
         yield* terminal.display('Proceed? (y/N) ')
 
-        const answer = yield* terminal.readLine.pipe(Effect.catchTag('QuitException', () => Effect.succeed('')))
+        const answer = yield* terminal.readLine.pipe(
+          Effect.catchTag('QuitException', () =>
+            Effect.fail(new Error(`Non-interactive mode: use --yes to allow symlinks outside project root`))
+          )
+        )
 
         if (answer.trim().toLowerCase() !== 'y') {
           yield* Console.log('Aborted.')
