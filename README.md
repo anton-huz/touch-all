@@ -104,11 +104,10 @@ my-project/
 
 Both formats produce identical results.
 
-
 ### Rules
 
 | Syntax            | Meaning                          |
-|-------------------| -------------------------------- |
+| ----------------- | -------------------------------- |
 | `name/`           | directory                        |
 | `name`            | file                             |
 | `dir/sub/`        | directory at an explicit subpath |
@@ -166,11 +165,7 @@ import { NodeContext, NodeRuntime } from '@effect/platform-node'
 const projectDirectory = '/absolute/target/path'
 const items = parserFolderStructure(tree)
 
-fileStructureCreator(items, projectDirectory)
-  .pipe(
-    Effect.provide(NodeContext.layer),
-    NodeRuntime.runMain,
-  )
+fileStructureCreator(items, projectDirectory).pipe(Effect.provide(NodeContext.layer), NodeRuntime.runMain)
 ```
 
 ### `resolveProjectPathToBase(projectPath: string, basePath: string): Effect<string, PathTraversalError>`
@@ -179,7 +174,6 @@ Resolves `projectPath` relative to `basePath` and rejects any path that would es
 
 > [!CAUTION]
 > `projectPath` cannot traverse outside of `basePath`. If `projectPath` is absolute, it treated as relative to `basePath`. If `projectPath` is relative, it is resolved against `basePath`. In either case, if the resulting path is outside of `basePath`, a `PathTraversalError` is thrown.
-
 
 ### Error types
 

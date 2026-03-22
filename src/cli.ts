@@ -41,44 +41,42 @@ const command = Command.make('touch-all', {
 }).pipe(
   Command.withDescription('Create directory structure from a tree representation'),
   Command.withHandler(({ tree, path: targetPath, dryRun = false, verbose }) => {
-    const readStdin = Effect.gen(function* (_) {
+    const readStdin = Effect.gen(function* () {
       if (process.stdin.isTTY) {
-        yield* _(Console.log('Paste your tree structure and press Ctrl+D when done:'))
+        yield* Console.log('Paste your tree structure and press Ctrl+D when done:')
       }
-      return yield* _(
-        Effect.tryPromise({
-          try: () =>
-            new Promise<string>((resolve) => {
-              const rl = createInterface({ input: process.stdin })
-              const lines: string[] = []
-              rl.on('line', (line) => lines.push(line))
-              rl.on('close', () => resolve(lines.join('\n')))
-            }),
-          catch: (e) => new Error(`Failed to read stdin: ${String(e)}`),
-        })
-      )
+      return yield* Effect.tryPromise({
+        try: () =>
+          new Promise<string>((resolve) => {
+            const rl = createInterface({ input: process.stdin })
+            const lines: string[] = []
+            rl.on('line', (line) => lines.push(line))
+            rl.on('close', () => resolve(lines.join('\n')))
+          }),
+        catch: (e) => new Error(`Failed to read stdin: ${String(e)}`),
+      })
     })
 
-    const program = Effect.gen(function* (_) {
-      const treeString = Option.isSome(tree) ? tree.value : yield* _(readStdin)
+    const program = Effect.gen(function* () {
+      const treeString = Option.isSome(tree) ? tree.value : yield* readStdin
 
       if (dryRun) {
-        yield* _(Effect.logInfo('Running in dry mode. No one file system node will be created.'))
+        yield* Effect.logInfo('Running in dry mode. No one file system node will be created.')
       }
-      yield* _(Effect.logInfo('Parsing tree structure...'))
+      yield* Effect.logInfo('Parsing tree structure...')
 
       const items = parserFolderStructure(treeString)
 
       if (items.length === 0) {
-        yield* _(Console.error('No valid items found in the tree structure'))
-        return yield* _(Effect.fail(new Error('Invalid tree structure')))
+        yield* Console.error('No valid items found in the tree structure')
+        return yield* Effect.fail(new Error('Invalid tree structure'))
       }
 
-      yield* _(Effect.logInfo(`Found ${items.length} items to create`))
-      yield* _(Effect.logInfo(`Found: \n${items.map((i) => `${i.path} \n`).join('')}`))
+      yield* Effect.logInfo(`Found ${items.length} items to create`)
+      yield* Effect.logInfo(`Found: \n${items.map((i) => `${i.path} \n`).join('')}`)
 
       if (!dryRun) {
-        yield* _(fileStructureCreator(items, targetPath))
+        yield* fileStructureCreator(items, targetPath)
       }
     })
 
