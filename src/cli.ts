@@ -2,12 +2,13 @@
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
 import { Args, Command, Options } from '@effect/cli'
-import { Path, Terminal } from '@effect/platform'
 import { Console, Effect, Logger, LogLevel, Option } from 'effect'
-import { parserFolderStructure } from './parser'
 import { fileStructureCreator } from './fsGenerator'
-import { isSymlinkOutsideRoot } from './fsNormalizator'
+import { checkOutsideSymlinks } from './symlinkGuard'
+import { readStdin } from './stdin'
 import packageJson from '../package.json'
+
+const { name, version } = packageJson
 
 // Definition of CLI arguments and options
 const treeArg = Args.text({ name: 'tree' }).pipe(
@@ -40,7 +41,7 @@ const yesOption = Options.boolean('yes').pipe(
 )
 
 // Declaration of the main command
-const command = Command.make('touch-all', {
+const command = Command.make(name, {
   tree: treeArg,
   path: pathOption,
   dryRun: dryRunOption,
@@ -49,57 +50,6 @@ const command = Command.make('touch-all', {
 }).pipe(
   Command.withDescription('Create directory structure from a tree representation'),
   Command.withHandler(({ tree, path: targetPath, dryRun = false, verbose, yes }) => {
-    const readStdin = Effect.gen(function* () {
-      const terminal = yield* Terminal.Terminal
-      const lines: string[] = []
-      while (true) {
-        const line = yield* terminal.readLine.pipe(
-          Effect.catchTag('QuitException', () => Effect.succeed(null as string | null))
-        )
-        if (line === null) break
-        lines.push(line)
-      }
-      return lines.join('\n')
-    })
-
-    const checkOutsideSymlinks = (treeString: string, projectRoot: string) =>
-      Effect.gen(function* () {
-        const nodePath = yield* Path.Path
-        const items = parserFolderStructure(treeString)
-        const resolvedRoot = nodePath.resolve(projectRoot)
-
-        const symlinks = items.filter(
-          (item): item is Extract<(typeof items)[number], { type: 'symlink' }> => item.type === 'symlink'
-        )
-        const outsideSymlinks = symlinks.filter((item) =>
-          isSymlinkOutsideRoot(item.path, item.target, resolvedRoot, nodePath)
-        )
-
-        if (outsideSymlinks.length === 0) return items
-
-        if (yes) return items
-
-        const listing = outsideSymlinks.map((item) => `  ${item.path} -> ${item.target}`).join('\n')
-
-        yield* Console.log(`Warning: the following symlinks point outside PROJECT_ROOT (${resolvedRoot}):\n${listing}`)
-
-        const terminal = yield* Terminal.Terminal
-        yield* terminal.display('Proceed? (y/N) ')
-
-        const answer = yield* terminal.readLine.pipe(
-          Effect.catchTag('QuitException', () =>
-            Effect.fail(new Error(`Non-interactive mode: use --yes to allow symlinks outside project root`))
-          )
-        )
-
-        if (answer.trim().toLowerCase() !== 'y') {
-          yield* Console.log('Aborted.')
-          return yield* Effect.fail(new Error('Aborted by user'))
-        }
-
-        return items
-      })
-
     const program = Effect.gen(function* () {
       const rawTree = Option.isSome(tree) ? tree.value : yield* readStdin
       const treeString = Option.isSome(tree)
@@ -109,9 +59,10 @@ const command = Command.make('touch-all', {
       if (dryRun) {
         yield* Effect.logInfo('Running in dry mode. No one file system node will be created.')
       }
+
       yield* Effect.logInfo('Parsing tree structure...')
 
-      const items = yield* checkOutsideSymlinks(treeString, targetPath)
+      const items = yield* checkOutsideSymlinks(treeString, targetPath, yes)
 
       if (items.length === 0) {
         yield* Console.error('No valid items found in the tree structure')
@@ -131,7 +82,4 @@ const command = Command.make('touch-all', {
 )
 
 // Run the CLI
-export const cli = Command.run(command, {
-  name: packageJson.name,
-  version: packageJson.version,
-})
+export const cli = Command.run(command, { name, version })
