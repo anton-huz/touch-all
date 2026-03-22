@@ -115,7 +115,7 @@ Both formats produce identical results.
 ### Rules
 
 | Syntax            | Meaning                          |
-|-------------------| -------------------------------- |
+| ----------------- | -------------------------------- |
 | `name/`           | directory                        |
 | `name`            | file                             |
 | `dir/sub/`        | directory at an explicit subpath |
