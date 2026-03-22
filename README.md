@@ -13,8 +13,8 @@ It behaves like `mkdir -p` and `touch` combined, creating directories and files 
 - Inline comments stripped automatically (`# ...`, `// ...`, `<- ...`, `← ...`)
 - Symlink creation with `link-name -> target` syntax
 - `--dry-run` parses and validates without touching the file system
-- `--verbose` prints every created path
-- Path traversal protection — no item can escape the target directory
+- Prints a summary line on success (`✓ Done. N items created.`); `--verbose` adds per-item detail
+- Path traversal protection — no file, folder, or symlink target can escape the target directory
 - Importable as a Node.js library with full TypeScript types
 
 ## Installation
@@ -60,7 +60,7 @@ touch-all "..." --dry-run
 touch-all "..." -n
 ```
 
-- `--verbose` , `-v` – prints every created path to the console. Useful for seeing exactly what will be created, especially with complex structures. It's an alias for `--log-level info`
+- `--verbose` , `-v` – prints every created path to the console. Useful for seeing exactly what will be created, especially with complex structures. By default only a summary line is printed on success (`✓ Done. N items created.`). `--verbose` adds per-item detail.
 
 ```bash
 touch-all "..." --verbose
@@ -145,6 +145,8 @@ If `target` ends with `/`, the symlink is created as a directory symlink (releva
 
 > [!WARNING]
 > If any symlink target resolves outside the project root (`--path`), `touch-all` will prompt for confirmation before proceeding. Use `--yes` to skip the prompt in scripts or CI.
+>
+> When using `fileStructureCreator` directly as a library, outside-root symlinks are rejected by default with a `PathTraversalError`. Pass `{ allowOutsideSymlinks: true }` as the third argument to allow them.
 
 ## Library API
 
@@ -157,8 +159,8 @@ import {
   parserFolderStructure,
   fileStructureCreator,
   resolveProjectPathToBase,
+  isSymlinkOutsideRoot,
   PathTraversalError,
-  FsError,
 } from 'touch-all'
 import type { ParserResult, ParserResultLineItem } from 'touch-all'
 ```
@@ -189,9 +191,11 @@ const items = parserFolderStructure(`
 // ]
 ```
 
-### `fileStructureCreator(items: ParserResult, basePath: string): Effect<void, FsError | PathTraversalError>`
+### `fileStructureCreator(items, basePath, options?): Effect<void, PathTraversalError>`
 
 Creates the parsed structure on disk under `basePath`. Returns an [Effect](https://effect.website/).
+
+By default, symlinks whose targets resolve outside `basePath` are rejected with `PathTraversalError`. Pass `{ allowOutsideSymlinks: true }` to allow them.
 
 ```ts
 import { Effect } from 'effect'
@@ -200,7 +204,31 @@ import { NodeContext, NodeRuntime } from '@effect/platform-node'
 const projectDirectory = '/absolute/target/path'
 const items = parserFolderStructure(tree)
 
+// Default: outside-root symlinks are rejected
 fileStructureCreator(items, projectDirectory).pipe(Effect.provide(NodeContext.layer), NodeRuntime.runMain)
+
+// Opt out of symlink containment check
+fileStructureCreator(items, projectDirectory, { allowOutsideSymlinks: true }).pipe(
+  Effect.provide(NodeContext.layer),
+  NodeRuntime.runMain
+)
+```
+
+### `isSymlinkOutsideRoot(linkPath, target, basePath, path): boolean`
+
+Pure function that returns `true` if a symlink target resolves outside `basePath`. Useful for pre-validating items before passing them to `fileStructureCreator`.
+
+```ts
+import { Path } from '@effect/platform'
+import { Effect } from 'effect'
+import { NodeContext } from '@effect/platform-node'
+import { isSymlinkOutsideRoot } from 'touch-all'
+
+Effect.gen(function* () {
+  const path = yield* Path.Path
+  const outside = isSymlinkOutsideRoot('src/link', '../../etc/passwd', '/project', path)
+  // true — target escapes /project
+}).pipe(Effect.provide(NodeContext.layer))
 ```
 
 ### `resolveProjectPathToBase(projectPath: string, basePath: string): Effect<string, PathTraversalError>`
@@ -212,10 +240,9 @@ Resolves `projectPath` relative to `basePath` and rejects any path that would es
 
 ### Error types
 
-| Class                | `_tag`                 | When thrown                                                     |
-| -------------------- | ---------------------- | --------------------------------------------------------------- |
-| `PathTraversalError` | `'PathTraversalError'` | Resolved path escapes `basePath`, or `basePath` is not absolute |
-| `FsError`            | `'FsError'`            | `mkdirSync`, `writeFileSync`, or `symlinkSync` fails            |
+| Class                | `_tag`                 | When thrown                                                                |
+| -------------------- | ---------------------- | -------------------------------------------------------------------------- |
+| `PathTraversalError` | `'PathTraversalError'` | A file/folder path or symlink target escapes `basePath` (unless opted out) |
 
 ## License
 

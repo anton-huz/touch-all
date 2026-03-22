@@ -2,11 +2,16 @@
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
 import { FileSystem, Path } from '@effect/platform'
-import { Effect } from 'effect'
+import { Console, Effect } from 'effect'
 import { type ParserResult } from './_commonTypes'
-import { resolveProjectPathToBase } from './fsNormalizator'
+import { PathTraversalError } from './_commonErrors'
+import { isSymlinkOutsideRoot, resolveProjectPathToBase } from './fsNormalizator'
 
-export const fileStructureCreator = (items: ParserResult, basePath: string) =>
+export const fileStructureCreator = (
+  items: ParserResult,
+  basePath: string,
+  options?: { allowOutsideSymlinks?: boolean }
+) =>
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
@@ -25,6 +30,11 @@ export const fileStructureCreator = (items: ParserResult, basePath: string) =>
           break
 
         case 'symlink':
+          if (!options?.allowOutsideSymlinks && isSymlinkOutsideRoot(item.path, item.target, basePath, path)) {
+            yield* Effect.fail(
+              new PathTraversalError(`symlink target escapes root: ${item.path} -> ${item.target} (base: ${basePath})`)
+            )
+          }
           yield* fs.makeDirectory(dir, { recursive: true })
           yield* fs.symlink(item.target, fullPath)
           yield* Effect.logInfo(`  Created symlink:   ${item.path} -> ${item.target}`)
@@ -37,5 +47,5 @@ export const fileStructureCreator = (items: ParserResult, basePath: string) =>
       }
     }
 
-    yield* Effect.logInfo('\n✓ Structure created successfully!')
+    yield* Console.log(`✓ Done. ${items.length} items created.`)
   })

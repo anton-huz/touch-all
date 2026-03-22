@@ -6,6 +6,21 @@ import { Effect } from 'effect'
 import { PathTraversalError } from './_commonErrors'
 
 /**
+ * Returns true if the symlink target escapes the base directory.
+ *
+ * @param linkPath string - Path of the symlink relative to project root.
+ * @param target string - The symlink target value.
+ * @param basePath string - Project root (absolute or relative).
+ * @param path Path.Path - Platform path service instance.
+ */
+export const isSymlinkOutsideRoot = (linkPath: string, target: string, basePath: string, path: Path.Path): boolean => {
+  const resolvedBase = path.resolve(basePath)
+  const symlinkDir = path.resolve(resolvedBase, path.dirname(linkPath))
+  const resolvedTarget = path.resolve(symlinkDir, target)
+  return path.relative(resolvedBase, resolvedTarget).startsWith('..')
+}
+
+/**
  * Safely normalize a user-supplied path against a base directory.
  * Fails with PathTraversalError if the resolved path escapes the base.
  *

@@ -8,4 +8,3 @@ export class PathTraversalError {
     return `${this._tag}: The path cannot be used ${this.path}`
   }
 }
-

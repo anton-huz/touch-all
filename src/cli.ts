@@ -7,6 +7,7 @@ import { Path, Terminal } from '@effect/platform'
 import { Console, Effect, Logger, LogLevel, Option } from 'effect'
 import { parserFolderStructure } from './parser'
 import { fileStructureCreator } from './fsGenerator'
+import { isSymlinkOutsideRoot } from './fsNormalizator'
 import pkgjsn from '../package.json'
 
 // Definition of CLI arguments and options
@@ -71,13 +72,12 @@ const command = Command.make('touch-all', {
         const items = parserFolderStructure(treeString)
         const resolvedRoot = nodePath.resolve(projectRoot)
 
-        const outsideSymlinks = items
-          .filter((item) => item.type === 'symlink')
-          .filter((item) => {
-            const symlinkDir = nodePath.resolve(resolvedRoot, nodePath.dirname(item.path))
-            const resolvedTarget = nodePath.resolve(symlinkDir, item.target)
-            return nodePath.relative(resolvedRoot, resolvedTarget).startsWith('..')
-          })
+        const symlinks = items.filter(
+          (item): item is Extract<(typeof items)[number], { type: 'symlink' }> => item.type === 'symlink'
+        )
+        const outsideSymlinks = symlinks.filter((item) =>
+          isSymlinkOutsideRoot(item.path, item.target, resolvedRoot, nodePath)
+        )
 
         if (outsideSymlinks.length === 0) return items
 
@@ -90,9 +90,7 @@ const command = Command.make('touch-all', {
           return yield* Effect.fail(new Error('Non-interactive mode with outside symlinks'))
         }
 
-        const listing = outsideSymlinks
-          .map((item) => `  ${item.path} -> ${item.type === 'symlink' ? item.target : ''}`)
-          .join('\n')
+        const listing = outsideSymlinks.map((item) => `  ${item.path} -> ${item.target}`).join('\n')
 
         yield* Console.log(`Warning: the following symlinks point outside PROJECT_ROOT (${resolvedRoot}):\n${listing}`)
 
@@ -128,7 +126,7 @@ const command = Command.make('touch-all', {
       yield* Effect.logInfo(`Found: \n${items.map((i) => `${i.path} \n`).join('')}`)
 
       if (!dryRun) {
-        yield* fileStructureCreator(items, targetPath)
+        yield* fileStructureCreator(items, targetPath, { allowOutsideSymlinks: yes })
       }
     })
 
