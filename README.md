@@ -10,7 +10,8 @@ It behaves like `mkdir -p` and `touch` combined, creating directories and files 
 
 - Accepts tree strings in **box-drawing** (`├──`, `└──`, `│`) or **indentation** (spaces) format
 - Trailing slash `/` marks a directory; no trailing `/` marks a file
-- Inline comments stripped automatically (`# ...` and `// ...`)
+- Inline comments stripped automatically (`# ...`, `// ...`, `<- ...`, `← ...`)
+- Symlink creation with `link-name -> target` syntax
 - `--dry-run` parses and validates without touching the file system
 - `--verbose` prints every created path
 - Path traversal protection — no item can escape the target directory
@@ -66,6 +67,13 @@ touch-all "..." --verbose
 touch-all "..." -v
 ```
 
+- `--yes` , `-y` – skips the confirmation prompt when symlinks point outside the project root. Required in non-interactive environments (scripts, CI).
+
+```bash
+touch-all "..." --yes
+touch-all "..." -y
+```
+
 - `--completions` – generates a completion script for a specific shell. Supported shells: `sh`, `bash`, `fish`, `zsh`.
 - `--log-level` – sets the minimum log level for a command. Supported levels: `all`, `trace`, `debug`, `info`, `warning`, `error`, `fatal`, `none`. The default log level is `warning`.
 - `--help` , `-h` – shows the help documentation for a command.
@@ -114,8 +122,29 @@ Both formats produce identical results.
 | `dir/sub/file.ts` | file at an explicit subpath      |
 | `... # comment`   | ignored (stripped)               |
 | `... // comment`  | ignored (stripped)               |
+| `... <- comment`  | ignored (stripped)               |
+| `... ← comment`   | ignored (stripped)               |
+| `name -> target`  | symlink pointing to `target`     |
 
 Items at the root level (no indentation / no parent) are created directly inside the target directory.
+
+### Symlinks
+
+Use `link-name -> target` to create a symlink. The target is passed as-is to the OS — use paths relative to the symlink's location, just as you would in a shell.
+
+```
+my-project/
+  src/
+    index.ts
+    utils -> ../shared/utils.ts   # symlink to a sibling directory
+  shared/
+    utils.ts
+```
+
+If `target` ends with `/`, the symlink is created as a directory symlink (relevant on Windows). The link name's suffix is ignored.
+
+> [!WARNING]
+> If any symlink target resolves outside the project root (`--path`), `touch-all` will prompt for confirmation before proceeding. Use `--yes` to skip the prompt in scripts or CI.
 
 ## Library API
 
@@ -136,21 +165,27 @@ import type { ParserResult, ParserResultLineItem } from 'touch-all'
 
 ### `parserFolderStructure(tree: string): ParserResult`
 
-Parses a tree string into a flat list of `type ParserResult = { path: string, isFile: boolean }` items. Pure function, no I/O.
+Parses a tree string into a flat list of items. Pure function, no I/O.
+
+Each item is one of:
+
+```ts
+type ParserResultLineItem =
+  | { type: 'file'; path: string }
+  | { type: 'folder'; path: string }
+  | { type: 'symlink'; path: string; target: string }
+```
 
 ```ts
 const items = parserFolderStructure(`
   src/
     index.ts
+    link -> ../shared.ts
 `)
 // [
-//    {
-//      path: 'src',
-//      isFile: false
-//     }, {
-//      path: 'src/index.ts',
-//      isFile: true
-//     }
+//   { type: 'folder',  path: 'src' },
+//   { type: 'file',    path: 'src/index.ts' },
+//   { type: 'symlink', path: 'src/link', target: '../shared.ts' },
 // ]
 ```
 
@@ -180,7 +215,7 @@ Resolves `projectPath` relative to `basePath` and rejects any path that would es
 | Class                | `_tag`                 | When thrown                                                     |
 | -------------------- | ---------------------- | --------------------------------------------------------------- |
 | `PathTraversalError` | `'PathTraversalError'` | Resolved path escapes `basePath`, or `basePath` is not absolute |
-| `FsError`            | `'FsError'`            | `mkdirSync` or `writeFileSync` fails                            |
+| `FsError`            | `'FsError'`            | `mkdirSync`, `writeFileSync`, or `symlinkSync` fails            |
 
 ## License
 

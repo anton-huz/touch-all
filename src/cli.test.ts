@@ -56,4 +56,47 @@ describe('touch-all CLI', () => {
       expect(fs.existsSync(path.join(tmpDir, 'src'))).toBe(false)
     })
   })
+
+  describe('symlinks', () => {
+    let tmpDir: string
+
+    beforeEach(() => {
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'touch-all-test-'))
+    })
+
+    afterEach(() => {
+      fs.rmSync(tmpDir, { recursive: true, force: true })
+    })
+
+    test('symlinks inside root proceed without --yes', async () => {
+      const tree = 'real.ts\nlink -> real.ts'
+      await expect(run(['--path', tmpDir, tree])).resolves.toBeUndefined()
+    })
+
+    test('symlinks outside root with --yes proceeds', async () => {
+      const tree = 'link -> ../../outside.ts'
+      await expect(run(['--path', tmpDir, '--yes', tree])).resolves.toBeUndefined()
+    })
+
+    test('symlinks outside root without --yes fails in non-interactive mode', async () => {
+      const tree = 'link -> ../../outside.ts'
+      await expect(run(['--path', tmpDir, tree])).rejects.toBeDefined()
+    })
+
+    test('creates symlink on the file system', async () => {
+      const tree = 'real.ts\nlink -> real.ts'
+      await run(['--path', tmpDir, tree])
+
+      expect(fs.existsSync(path.join(tmpDir, 'real.ts'))).toBe(true)
+      expect(fs.lstatSync(path.join(tmpDir, 'link')).isSymbolicLink()).toBe(true)
+      expect(fs.readlinkSync(path.join(tmpDir, 'link'))).toBe('real.ts')
+    })
+
+    test('--yes with --dry-run does not create symlinks', async () => {
+      const tree = 'link -> ../../outside.ts'
+      await run(['--path', tmpDir, '--yes', '--dry-run', tree])
+
+      expect(fs.existsSync(path.join(tmpDir, 'link'))).toBe(false)
+    })
+  })
 })
