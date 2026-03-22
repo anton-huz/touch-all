@@ -10,12 +10,13 @@ It behaves like `mkdir -p` and `touch` combined, creating directories and files 
 
 - Accepts tree strings in **box-drawing** (`├──`, `└──`, `│`) or **indentation** (spaces) format
 - Trailing slash `/` marks a directory; no trailing `/` marks a file
-- Inline comments stripped automatically (`# ...`, `// ...`, `<- ...`, `← ...`)
 - Symlink creation with `link-name -> target` syntax
-- `--dry-run` parses and validates without touching the file system
+- Inline comments stripped automatically (`# ...`, `// ...`, `<- ...`, `← ...`)
+- `--dry-run` (`-n`) parses and validates without touching the file system
 - Prints a summary line on success (`✓ Done. N items created.`); `--verbose` adds per-item detail
 - Path traversal protection — no file, folder, or symlink target can escape the target directory
 - Importable as a Node.js library with full TypeScript types
+- Pipable interface to run as `echo tree | touch-all` in CI or scripts
 
 ## Installation
 
