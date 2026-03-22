@@ -3,6 +3,6 @@
 
 export { fileStructureCreator } from './fsGenerator'
 export { isSymlinkOutsideRoot, resolveProjectPathToBase } from './fsNormalizator'
-export { PathTraversalError } from './_commonErrors'
-export type { ParserResult, ParserResultLineItem } from './_commonTypes'
+export { PathTraversalError } from './errors'
+export type { ParserResult, ParserResultLineItem } from './types'
 export { parserFolderStructure } from './parser'

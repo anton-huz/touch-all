@@ -3,8 +3,8 @@
 
 import { FileSystem, Path } from '@effect/platform'
 import { Console, Effect } from 'effect'
-import { type ParserResult } from './_commonTypes'
-import { PathTraversalError } from './_commonErrors'
+import { type ParserResult } from './types'
+import { PathTraversalError } from './errors'
 import { isSymlinkOutsideRoot, resolveProjectPathToBase } from './fsNormalizator'
 
 export const fileStructureCreator = (

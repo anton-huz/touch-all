@@ -3,7 +3,7 @@
 
 import { Path } from '@effect/platform'
 import { Effect } from 'effect'
-import { PathTraversalError } from './_commonErrors'
+import { PathTraversalError } from './errors'
 
 /**
  * Returns true if the symlink target escapes the base directory.

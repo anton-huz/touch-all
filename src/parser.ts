@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
-import type { ParserResult } from './_commonTypes'
+import type { ParserResult } from './types'
 
 export const parserFolderStructure = (treeString: string): ParserResult => {
   const lines = treeString.split('\n')

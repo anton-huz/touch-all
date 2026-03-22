@@ -5,7 +5,7 @@ import { describe, test, expect } from 'vitest'
 import { Effect, Exit, Cause, Option } from 'effect'
 import { NodeContext } from '@effect/platform-node'
 import { resolveProjectPathToBase } from './fsNormalizator'
-import { PathTraversalError } from './_commonErrors'
+import { PathTraversalError } from './errors'
 
 describe('safeNormalizePath', () => {
   const res = (a: string, b: string) =>
