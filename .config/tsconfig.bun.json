@@ -9,6 +9,6 @@
     "resolveJsonModule": true,
     "types": ["vitest/globals", "bun-types", "node"]
   },
-  "include": ["../bun.ts"],
+  "include": ["../.bin/**/*.ts"],
   "exclude": []
 }
