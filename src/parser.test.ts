@@ -8,15 +8,15 @@ test('Basic constrains for parserFolderStructure', () => {
   const parser = parserFolderStructure
 
   expect(parser('/')).toHaveLength(0)
-  expect(parser('demo')).toEqual([{ path: 'demo', isFile: true }])
+  expect(parser('demo')).toEqual([{ path: 'demo', type: 'file' }])
   expect(parser('demo/')).toSatisfy(Array.isArray)
-  expect(parser('demo/')).toEqual([{ path: 'demo', isFile: false }])
-  expect(parser('demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
-  expect(parser('/demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
-  expect(parser('  /demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
-  expect(parser('./demo')).toEqual([{ path: 'demo', isFile: true }])
-  expect(parser('./demo/')).toEqual([{ path: 'demo', isFile: false }])
-  expect(parser('./demo/demo/')).toEqual([{ path: 'demo/demo', isFile: false }])
+  expect(parser('demo/')).toEqual([{ path: 'demo', type: 'folder' }])
+  expect(parser('demo/demo/')).toEqual([{ path: 'demo/demo', type: 'folder' }])
+  expect(parser('/demo/demo/')).toEqual([{ path: 'demo/demo', type: 'folder' }])
+  expect(parser('  /demo/demo/')).toEqual([{ path: 'demo/demo', type: 'folder' }])
+  expect(parser('./demo')).toEqual([{ path: 'demo', type: 'file' }])
+  expect(parser('./demo/')).toEqual([{ path: 'demo', type: 'folder' }])
+  expect(parser('./demo/demo/')).toEqual([{ path: 'demo/demo', type: 'folder' }])
 })
 
 test('Complex constrains with drawing symbols', () => {
@@ -41,66 +41,21 @@ my-project/
 
   expect(parser(structure)).toHaveLength(15)
   expect(parser(structure)).toEqual([
-    {
-      'isFile': false,
-      'path': 'my-project',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/.config',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/tsconfig.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/tsconfig.test.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/vite.config.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/oxlint.json',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src/sample',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/sample/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/sample/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/package.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/README.md',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.gitignore',
-    },
+    { type: 'folder', path: 'my-project' },
+    { type: 'folder', path: 'my-project/.config' },
+    { type: 'file', path: 'my-project/.config/tsconfig.json' },
+    { type: 'file', path: 'my-project/.config/tsconfig.test.json' },
+    { type: 'file', path: 'my-project/.config/vite.config.ts' },
+    { type: 'file', path: 'my-project/.config/oxlint.json' },
+    { type: 'folder', path: 'my-project/src' },
+    { type: 'folder', path: 'my-project/src/sample' },
+    { type: 'file', path: 'my-project/src/sample/index.ts' },
+    { type: 'file', path: 'my-project/src/sample/index.test.ts' },
+    { type: 'file', path: 'my-project/src/index.ts' },
+    { type: 'file', path: 'my-project/src/index.test.ts' },
+    { type: 'file', path: 'my-project/package.json' },
+    { type: 'file', path: 'my-project/README.md' },
+    { type: 'file', path: 'my-project/.gitignore' },
   ])
 })
 
@@ -129,66 +84,21 @@ my-project/
 
   expect(parser(structure)).toHaveLength(15)
   expect(parser(structure)).toEqual([
-    {
-      'isFile': false,
-      'path': 'my-project',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/.config',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/tsconfig.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/tsconfig.test.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/vite.config.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/oxlint.json',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src/sample',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/sample/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/sample/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/package.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/README.md',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.gitignore',
-    },
+    { type: 'folder', path: 'my-project' },
+    { type: 'folder', path: 'my-project/.config' },
+    { type: 'file', path: 'my-project/.config/tsconfig.json' },
+    { type: 'file', path: 'my-project/.config/tsconfig.test.json' },
+    { type: 'file', path: 'my-project/.config/vite.config.ts' },
+    { type: 'file', path: 'my-project/.config/oxlint.json' },
+    { type: 'folder', path: 'my-project/src' },
+    { type: 'folder', path: 'my-project/src/sample' },
+    { type: 'file', path: 'my-project/src/sample/index.ts' },
+    { type: 'file', path: 'my-project/src/sample/index.test.ts' },
+    { type: 'file', path: 'my-project/src/index.ts' },
+    { type: 'file', path: 'my-project/src/index.test.ts' },
+    { type: 'file', path: 'my-project/package.json' },
+    { type: 'file', path: 'my-project/README.md' },
+    { type: 'file', path: 'my-project/.gitignore' },
   ])
 })
 
@@ -217,66 +127,21 @@ README.md
 
   expect(parser(structure)).toHaveLength(15)
   expect(parser(structure)).toEqual([
-    {
-      'isFile': false,
-      'path': 'my-project',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/.config/subconfig',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/subconfig/tsconfig.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/subconfig/tsconfig.test.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/subconfig/vite.config.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/subconfig/oxlint.json',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src/subsample',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src/subsample/sample',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/subsample/sample/sub/sub/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/subsample/sample/pod/pod/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/subsample/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/subsample/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'package.json',
-    },
-    {
-      'isFile': true,
-      'path': 'README.md',
-    },
-    {
-      'isFile': true,
-      'path': '.gitignore',
-    },
+    { type: 'folder', path: 'my-project' },
+    { type: 'folder', path: 'my-project/.config/subconfig' },
+    { type: 'file', path: 'my-project/.config/subconfig/tsconfig.json' },
+    { type: 'file', path: 'my-project/.config/subconfig/tsconfig.test.json' },
+    { type: 'file', path: 'my-project/.config/subconfig/vite.config.ts' },
+    { type: 'file', path: 'my-project/.config/subconfig/oxlint.json' },
+    { type: 'folder', path: 'my-project/src/subsample' },
+    { type: 'folder', path: 'my-project/src/subsample/sample' },
+    { type: 'file', path: 'my-project/src/subsample/sample/sub/sub/index.ts' },
+    { type: 'file', path: 'my-project/src/subsample/sample/pod/pod/index.test.ts' },
+    { type: 'file', path: 'my-project/src/subsample/index.ts' },
+    { type: 'file', path: 'my-project/src/subsample/index.test.ts' },
+    { type: 'file', path: 'package.json' },
+    { type: 'file', path: 'README.md' },
+    { type: 'file', path: '.gitignore' },
   ])
 })
 
@@ -316,66 +181,21 @@ my-project/
 
   expect(parser(structure)).toHaveLength(15)
   expect(parser(structure)).toEqual([
-    {
-      'isFile': false,
-      'path': 'my-project',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/.config',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/tsconfig.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/tsconfig.test.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/vite.config.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.config/oxlint.json',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src',
-    },
-    {
-      'isFile': false,
-      'path': 'my-project/src/sample',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/sample/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/sample/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/index.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/src/index.test.ts',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/package.json',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/README.md',
-    },
-    {
-      'isFile': true,
-      'path': 'my-project/.gitignore',
-    },
+    { type: 'folder', path: 'my-project' },
+    { type: 'folder', path: 'my-project/.config' },
+    { type: 'file', path: 'my-project/.config/tsconfig.json' },
+    { type: 'file', path: 'my-project/.config/tsconfig.test.json' },
+    { type: 'file', path: 'my-project/.config/vite.config.ts' },
+    { type: 'file', path: 'my-project/.config/oxlint.json' },
+    { type: 'folder', path: 'my-project/src' },
+    { type: 'folder', path: 'my-project/src/sample' },
+    { type: 'file', path: 'my-project/src/sample/index.ts' },
+    { type: 'file', path: 'my-project/src/sample/index.test.ts' },
+    { type: 'file', path: 'my-project/src/index.ts' },
+    { type: 'file', path: 'my-project/src/index.test.ts' },
+    { type: 'file', path: 'my-project/package.json' },
+    { type: 'file', path: 'my-project/README.md' },
+    { type: 'file', path: 'my-project/.gitignore' },
   ])
 })
 
@@ -389,18 +209,9 @@ bb/
 cc/
   `)
   ).toEqual([
-    {
-      'isFile': false,
-      'path': 'aa',
-    },
-    {
-      'isFile': false,
-      'path': 'bb',
-    },
-    {
-      'isFile': false,
-      'path': 'cc',
-    },
+    { type: 'folder', path: 'aa' },
+    { type: 'folder', path: 'bb' },
+    { type: 'folder', path: 'cc' },
   ])
 })
 
@@ -414,17 +225,70 @@ bb
 cc
   `)
   ).toEqual([
-    {
-      'isFile': true,
-      'path': 'aa',
-    },
-    {
-      'isFile': true,
-      'path': 'bb',
-    },
-    {
-      'isFile': true,
-      'path': 'cc',
-    },
+    { type: 'file', path: 'aa' },
+    { type: 'file', path: 'bb' },
+    { type: 'file', path: 'cc' },
   ])
+})
+
+test('All comment symbols', () => {
+  const parser = parserFolderStructure
+  const structure = `
+my-project/
+  src/          # hash comment
+    index.ts    // double-slash comment
+    index.test.ts <- arrow comment
+    README.md   ← unicode arrow comment
+  `
+
+  expect(parser(structure)).toHaveLength(5)
+  expect(parser(structure)).toEqual([
+    { type: 'folder', path: 'my-project' },
+    { type: 'folder', path: 'my-project/src' },
+    { type: 'file', path: 'my-project/src/index.ts' },
+    { type: 'file', path: 'my-project/src/index.test.ts' },
+    { type: 'file', path: 'my-project/src/README.md' },
+  ])
+})
+
+test('Symlinks basic', () => {
+  const parser = parserFolderStructure
+
+  expect(parser('link -> target.ts')).toEqual([{ type: 'symlink', path: 'link', target: 'target.ts' }])
+  expect(parser('link -> target/')).toEqual([{ type: 'symlink', path: 'link', target: 'target/' }])
+})
+
+test('Symlinks in a tree', () => {
+  const parser = parserFolderStructure
+  const structure = `
+my-project/
+  src/
+    index.ts
+    utils -> ../shared/utils.ts
+  shared/
+    utils.ts
+  `
+
+  expect(parser(structure)).toHaveLength(6)
+  expect(parser(structure)).toEqual([
+    { type: 'folder', path: 'my-project' },
+    { type: 'folder', path: 'my-project/src' },
+    { type: 'file', path: 'my-project/src/index.ts' },
+    { type: 'symlink', path: 'my-project/src/utils', target: '../shared/utils.ts' },
+    { type: 'folder', path: 'my-project/shared' },
+    { type: 'file', path: 'my-project/shared/utils.ts' },
+  ])
+})
+
+test('Symlinks edge cases', () => {
+  const parser = parserFolderStructure
+
+  // no link name — skip
+  expect(parser('-> target.ts')).toHaveLength(0)
+  // no target — skip
+  expect(parser('link ->')).toHaveLength(0)
+  // whitespace-only target — skip
+  expect(parser('link ->   ')).toHaveLength(0)
+  // multi-arrow: everything after first -> is the target
+  expect(parser('link -> a -> b')).toEqual([{ type: 'symlink', path: 'link', target: 'a -> b' }])
 })
