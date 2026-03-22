@@ -115,15 +115,15 @@ Both formats produce identical results.
 ### Rules
 
 | Syntax            | Meaning                          |
-| ----------------- | -------------------------------- |
+|-------------------| -------------------------------- |
 | `name/`           | directory                        |
 | `name`            | file                             |
 | `dir/sub/`        | directory at an explicit subpath |
 | `dir/sub/file.ts` | file at an explicit subpath      |
-| `... # comment`   | ignored (stripped)               |
+| `... #  comment`  | ignored (stripped)               |
 | `... // comment`  | ignored (stripped)               |
 | `... <- comment`  | ignored (stripped)               |
-| `... ← comment`   | ignored (stripped)               |
+| `... ←  comment`  | ignored (stripped)               |
 | `name -> target`  | symlink pointing to `target`     |
 
 Items at the root level (no indentation / no parent) are created directly inside the target directory.
@@ -134,11 +134,11 @@ Use `link-name -> target` to create a symlink. The target is passed as-is to the
 
 ```
 my-project/
-  src/
-    index.ts
-    utils -> ../shared/utils.ts   # symlink to a sibling directory
-  shared/
-    utils.ts
+├─ src/
+│  ├─ index.ts
+│  └─ utils -> ../shared/utils.ts   # symlink to a sibling directory
+└─ shared/
+   └─ utils.ts
 ```
 
 If `target` ends with `/`, the symlink is created as a directory symlink (relevant on Windows). The link name's suffix is ignored.
@@ -235,7 +235,7 @@ Effect.gen(function* () {
 
 Resolves `projectPath` relative to `basePath` and rejects any path that would escape `basePath` (path traversal protection).
 
-> [!CAUTION]
+> [!WARNING]
 > `projectPath` cannot traverse outside of `basePath`. If `projectPath` is absolute, it treated as relative to `basePath`. If `projectPath` is relative, it is resolved against `basePath`. In either case, if the resulting path is outside of `basePath`, a `PathTraversalError` is thrown.
 
 ### Error types

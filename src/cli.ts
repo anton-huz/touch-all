@@ -8,7 +8,7 @@ import { Console, Effect, Logger, LogLevel, Option } from 'effect'
 import { parserFolderStructure } from './parser'
 import { fileStructureCreator } from './fsGenerator'
 import { isSymlinkOutsideRoot } from './fsNormalizator'
-import pkgjsn from '../package.json'
+import packageJson from '../package.json'
 
 // Definition of CLI arguments and options
 const treeArg = Args.text({ name: 'tree' }).pipe(
@@ -108,7 +108,10 @@ const command = Command.make('touch-all', {
       })
 
     const program = Effect.gen(function* () {
-      const treeString = Option.isSome(tree) ? tree.value : yield* readStdin
+      const rawTree = Option.isSome(tree) ? tree.value : yield* readStdin
+      const treeString = Option.isSome(tree)
+        ? rawTree.replace(/\\(\\|n)/g, (_, c) => (c === 'n' ? '\n' : '\\'))
+        : rawTree
 
       if (dryRun) {
         yield* Effect.logInfo('Running in dry mode. No one file system node will be created.')
@@ -136,6 +139,6 @@ const command = Command.make('touch-all', {
 
 // Run the CLI
 export const cli = Command.run(command, {
-  name: pkgjsn.name,
-  version: pkgjsn.version,
+  name: packageJson.name,
+  version: packageJson.version,
 })

@@ -18,6 +18,10 @@ describe('touch-all CLI', () => {
       await expect(run(['--dry-run', 'src/\n  index.ts'])).resolves.toBeUndefined()
     })
 
+    test('converts \\n escape sequence in positional argument to newline', async () => {
+      await expect(run(['--dry-run', 'src/\\n  index.ts'])).resolves.toBeUndefined()
+    })
+
     test('fails with a root-only tree that produces no items', async () => {
       await expect(run(['--dry-run', '/'])).rejects.toBeDefined()
     })
@@ -36,6 +40,13 @@ describe('touch-all CLI', () => {
 
     test('creates expected directories and files at target path', async () => {
       await run(['--path', tmpDir, 'src/\n  index.ts'])
+
+      expect(fs.existsSync(path.join(tmpDir, 'src'))).toBe(true)
+      expect(fs.existsSync(path.join(tmpDir, 'src', 'index.ts'))).toBe(true)
+    })
+
+    test('\\n escape in argument creates correct structure', async () => {
+      await run(['--path', tmpDir, 'src/\\n  index.ts'])
 
       expect(fs.existsSync(path.join(tmpDir, 'src'))).toBe(true)
       expect(fs.existsSync(path.join(tmpDir, 'src', 'index.ts'))).toBe(true)
