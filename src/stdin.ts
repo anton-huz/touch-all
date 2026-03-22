@@ -6,11 +6,15 @@ import { Effect } from 'effect'
 
 export const readStdin = Effect.tryPromise({
   try: () =>
-    new Promise<string>((resolve) => {
-      const rl = createInterface({ input: process.stdin })
-      const lines: string[] = []
-      rl.on('line', (line) => lines.push(line))
-      rl.on('close', () => resolve(lines.join('\n')))
+    new Promise<string>((resolve, reject) => {
+      try {
+        const rl = createInterface({ input: process.stdin })
+        const lines: string[] = []
+        rl.on('line', (line) => lines.push(line))
+        rl.on('close', () => resolve(lines.join('\n')))
+      } catch (e) {
+        reject(e)
+      }
     }),
   catch: (e) => new Error(`Failed to read stdin: ${String(e)}`),
 })

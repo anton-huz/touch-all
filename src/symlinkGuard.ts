@@ -7,7 +7,7 @@ import { type ParserResult } from './types'
 import { parserFolderStructure } from './parser'
 import { isSymlinkOutsideRoot } from './fsNormalizator'
 
-export const checkOutsideSymlinks = (
+export const parseAndGuardSymlinks = (
   treeString: string,
   projectRoot: string,
   yes: boolean
@@ -30,7 +30,7 @@ export const checkOutsideSymlinks = (
 
     const listing = outsideSymlinks.map((item) => `  ${item.path} -> ${item.target}`).join('\n')
 
-    yield* Console.log(`Warning: the following symlinks point outside PROJECT_ROOT (${resolvedRoot}):\n${listing}`)
+    yield* Console.error(`Warning: the following symlinks point outside PROJECT_ROOT (${resolvedRoot}):\n${listing}`)
 
     const terminal = yield* Terminal.Terminal
     yield* terminal.display('Proceed? (y/N) ')
@@ -42,7 +42,7 @@ export const checkOutsideSymlinks = (
     )
 
     if (answer.trim().toLowerCase() !== 'y') {
-      yield* Console.log('Aborted.')
+      yield* Console.error('Aborted.')
       return yield* Effect.fail(new Error('Aborted by user'))
     }
 

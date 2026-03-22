@@ -4,7 +4,7 @@
 import { Args, Command, Options } from '@effect/cli'
 import { Console, Effect, Logger, LogLevel, Option } from 'effect'
 import { fileStructureCreator } from './fsGenerator'
-import { checkOutsideSymlinks } from './symlinkGuard'
+import { parseAndGuardSymlinks } from './symlinkGuard'
 import { readStdin } from './stdin'
 import packageJson from '../package.json'
 
@@ -49,7 +49,7 @@ const command = Command.make(name, {
   yes: yesOption,
 }).pipe(
   Command.withDescription('Create directory structure from a tree representation'),
-  Command.withHandler(({ tree, path: targetPath, dryRun = false, verbose, yes }) => {
+  Command.withHandler(({ tree, path: targetPath, dryRun, verbose, yes }) => {
     const program = Effect.gen(function* () {
       const rawTree = Option.isSome(tree) ? tree.value : yield* readStdin
       const treeString = Option.isSome(tree)
@@ -57,12 +57,12 @@ const command = Command.make(name, {
         : rawTree
 
       if (dryRun) {
-        yield* Effect.logInfo('Running in dry mode. No one file system node will be created.')
+        yield* Effect.logInfo('Dry run: no changes will be made to the file system.')
       }
 
       yield* Effect.logInfo('Parsing tree structure...')
 
-      const items = yield* checkOutsideSymlinks(treeString, targetPath, yes)
+      const items = yield* parseAndGuardSymlinks(treeString, targetPath, yes)
 
       if (items.length === 0) {
         yield* Console.error('No valid items found in the tree structure')
@@ -70,7 +70,7 @@ const command = Command.make(name, {
       }
 
       yield* Effect.logInfo(`Found ${items.length} items to create`)
-      yield* Effect.logInfo(`Found: \n${items.map((i) => `${i.path} \n`).join('')}`)
+      yield* Effect.logInfo(`Found:\n${items.map((i) => i.path).join('\n')}`)
 
       if (!dryRun) {
         yield* fileStructureCreator(items, targetPath, { allowOutsideSymlinks: yes })
