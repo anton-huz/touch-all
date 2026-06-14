@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
-import { describe, test, expect, beforeEach, afterEach } from 'vitest'
 import { Effect } from 'effect'
 import { Terminal } from '@effect/platform'
 import { NodeContext } from '@effect/platform-node'

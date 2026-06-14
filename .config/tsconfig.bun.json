@@ -7,7 +7,7 @@
     "rootDir": "../",
     "emitDeclarationOnly": true,
     "resolveJsonModule": true,
-    "types": ["vitest/globals", "bun-types", "node"]
+    "types": ["bun-types", "node"]
   },
   "include": ["../.bin/**/*.ts"],
   "exclude": []

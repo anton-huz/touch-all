@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
-import { test, expect } from 'vitest'
 import { parserFolderStructure } from './parser'
 
 test('Basic constrains for parserFolderStructure', () => {

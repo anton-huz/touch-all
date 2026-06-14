@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Anton Huz <anton@ahuz.dev>
 
-import { describe, test, expect } from 'vitest'
 import { Effect, Exit, Cause, Option } from 'effect'
 import { NodeContext } from '@effect/platform-node'
 import { resolveProjectPathToBase } from './fsNormalizator'
