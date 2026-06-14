@@ -3,3 +3,4 @@ dist/
 
 *.tsbuildinfo
 *.d.ts
+!**/test.d.ts
